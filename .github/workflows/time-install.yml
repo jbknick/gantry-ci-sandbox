@@ -77,7 +77,12 @@ jobs:
             e=$(date +%s%N)
             rss=$(tail -n 1 "$W/out/$name.rss" 2>/dev/null || echo 0)
             printf '%s\t%s\t%s\t%s\n' "$name" "$(( (e - s) / 1000000 ))" "$rc" "$rss" >> "$T"
+            echo "step $name: $(( (e - s) / 1000000 )) ms, exit $rc, peak RSS $rss KiB"
           }
+
+          # Memory and disk every 10 s, so a runner that is killed leaves a trace in the log.
+          ( while true; do echo "monitor: used/total MiB $(free -m | awk '/^Mem/{print $3"/"$2}'), disk used $(df -h / | awk 'NR==2{print $5}')"; sleep 10; done ) &
+          MON=$!
 
           do_install() {
             cd "$W/install" || return 1
@@ -116,6 +121,7 @@ jobs:
             step comment_update gh api -X PATCH "$api/comments/$cid" -F "body=@$W/out/body.md" --jq .id
           fi
 
+          kill "$MON"
           cd "$W/out"
           jq -R -s --arg size "$SIZE" --arg run "$RUN" --arg repo "$REPO" --arg sha "$SHA" \
             --arg image "${ImageOS:-}/${ImageVersion:-}" --arg node "$(node --version)" --arg cpus "$(nproc)" \
