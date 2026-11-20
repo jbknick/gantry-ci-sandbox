@@ -101,15 +101,18 @@ jobs:
           step init "$G" init
           step review "$G" review "$base...$SHA" --json
           step duplicates "$G" duplicates --json
+          # Extra, outside the bar: the same review over the last 100 first-parent commits, to see how large a review
+          # JSON gets against the 65,536-character comment limit.
+          step review_wide "$G" review "$SHA~100...$SHA" --json
 
-          # Comment cost. The body is the review JSON cut to 60,000 characters in a code fence, so it is close to the
-          # largest body a comment takes (65,536). The target is a commit comment on this sandbox's own commit: the
-          # sandbox has no pull request, and a read-only token is what is being asked about.
-          { echo '```json'; head -c 60000 "$W/out/review.out"; echo; echo '```'; } > "$W/out/body.md"
+          # Comment cost. The body is the wide review JSON cut to 60,000 characters in a code fence, so it is close to
+          # the largest body a comment takes (65,536). The target is a commit comment on this sandbox's own commit:
+          # the sandbox has no pull request, and a read-only token is what is being asked about.
+          { echo '```json'; head -c 60000 "$W/out/review_wide.out"; echo; echo '```'; } > "$W/out/body.md"
           api="repos/$GITHUB_REPOSITORY"
           step comment_create gh api -X POST "$api/commits/$GITHUB_SHA/comments" -F "body=@$W/out/body.md" --jq .id
-          cid=$(cat "$W/out/comment_create.out" 2>/dev/null | tr -d '\n')
-          if [ -n "$cid" ]; then
+          cid=$(tr -d '\n' < "$W/out/comment_create.out")
+          if [ "$(awk -F'\t' '$1=="comment_create"{print $3}' "$T")" = "0" ] && [ -n "$cid" ]; then
             step comment_update gh api -X PATCH "$api/comments/$cid" -F "body=@$W/out/body.md" --jq .id
           fi
 
@@ -117,10 +120,10 @@ jobs:
           jq -R -s --arg size "$SIZE" --arg run "$RUN" --arg repo "$REPO" --arg sha "$SHA" \
             --arg image "${ImageOS:-}/${ImageVersion:-}" --arg node "$(node --version)" --arg cpus "$(nproc)" \
             --arg tsfiles "$ts_files" --arg reviewbytes "$(wc -c < review.out)" \
-            --arg dupbytes "$(wc -c < duplicates.out)" --arg cerr "$(head -c 300 comment_create.err 2>/dev/null | tr '\n' ' ')" '
+            --arg dupbytes "$(wc -c < duplicates.out)" --arg widebytes "$(wc -c < review_wide.out)" --arg cerr "$(head -c 300 comment_create.err 2>/dev/null | tr '\n' ' ')" '
             { size: $size, run: ($run|tonumber), repo: $repo, sha: $sha, runner_image: $image, node: $node,
               cpus: ($cpus|tonumber), ts_files: ($tsfiles|tonumber), review_json_bytes: ($reviewbytes|tonumber),
-              duplicates_json_bytes: ($dupbytes|tonumber), comment_create_error: $cerr,
+              duplicates_json_bytes: ($dupbytes|tonumber), review_wide_json_bytes: ($widebytes|tonumber), comment_create_error: $cerr,
               steps: ( split("\n") | map(select(length>0) | split("\t")
                 | {name: .[0], ms: (.[1]|tonumber), exit: (.[2]|tonumber), peak_rss_kib: (.[3]|tonumber? // 0)}) ) }
             ' times.tsv > results.json
