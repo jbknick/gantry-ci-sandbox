@@ -61,6 +61,7 @@ jobs:
           REPO: ${{ steps.pick.outputs.repo }}
           SHA: ${{ steps.pick.outputs.sha }}
         run: |
+          set +e   # a failing step is recorded in times.tsv, not fatal
           set -u
           W="$RUNNER_TEMP/work"; mkdir -p "$W/install" "$W/out"
           export CLAUDE_PLUGIN_DATA="$W/data"
