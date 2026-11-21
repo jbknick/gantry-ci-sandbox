@@ -25,8 +25,8 @@ jobs:
         run: [1, 2, 3]
     env:
       VERSION: "0.1.0"
-      RELEASE_BASE: https://github.com/jbknick/gantry-ci-sandbox/releases/download/v0.1.0-sandbox.1
-      TARBALL_SHA256: 7da512528e0579422ee968f1f7a237b281f86838c052b3a5c72d8d481d083b49
+      RELEASE_BASE: https://github.com/jbknick/gantry-ci-sandbox/releases/download/v0.1.0-sandbox.2
+      TARBALL_SHA256: d495fcd73f6dfa248ab76a299da36e0da81b6c3fe36c4798ca23bfca36a56b93
     steps:
       - name: Pick the pinned repo for this size
         id: pick
