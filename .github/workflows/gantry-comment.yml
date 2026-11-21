@@ -25,7 +25,7 @@ jobs:
 
       - name: Comment
         id: gantry
-        uses: jbknick/architecture-visualization-cc-plugin/action@gantry/282-pr-comment-action
+        uses: jbknick/architecture-visualization-cc-plugin/action@main
         with:
           version: "0.1.0"
           sha256: "cecf56c46f194853ae53bd793bce1b09172ee228338534c87f9a8b3c1fcf9c28"
