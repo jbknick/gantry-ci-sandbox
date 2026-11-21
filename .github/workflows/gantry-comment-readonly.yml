@@ -1,0 +1,33 @@
+# The same Action with the token a pull request from a fork gets: read-only. The comment calls are refused (HTTP 403),
+# the review goes to the job summary and the job must stay green. A real fork cannot be made from this account.
+name: gantry-comment-readonly
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GANTRY_RELEASE_BASE: https://github.com/jbknick/gantry-ci-sandbox/releases/download/v0.1.0-sandbox.3
+    steps:
+      - name: Check out the pull request's head with full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Comment with a read-only token
+        id: gantry
+        uses: jbknick/architecture-visualization-cc-plugin/action@gantry/282-pr-comment-action
+        with:
+          version: "0.1.0"
+          sha256: "cecf56c46f194853ae53bd793bce1b09172ee228338534c87f9a8b3c1fcf9c28"
+
+      - name: Show the result
+        run: echo "comment=${{ steps.gantry.outputs.comment }}"
