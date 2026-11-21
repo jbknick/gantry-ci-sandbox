@@ -1,0 +1,34 @@
+# Tries the pull request comment Action of the Gantry repository on pull requests of this sandbox.
+name: gantry-comment
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # The tarball of the prerelease built from the Action's branch; the Action's default is the Gantry repository's releases.
+      GANTRY_RELEASE_BASE: https://github.com/jbknick/gantry-ci-sandbox/releases/download/v0.1.0-sandbox.3
+    steps:
+      - name: Check out the pull request's head with full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Comment
+        id: gantry
+        uses: jbknick/architecture-visualization-cc-plugin/action@gantry/282-pr-comment-action
+        with:
+          version: "0.1.0"
+          sha256: "cecf56c46f194853ae53bd793bce1b09172ee228338534c87f9a8b3c1fcf9c28"
+
+      - name: Show the result
+        run: echo "comment=${{ steps.gantry.outputs.comment }} url=${{ steps.gantry.outputs.comment-url }}"

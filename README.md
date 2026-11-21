@@ -1,6 +1,8 @@
 # gantry-ci-sandbox
 
-Sandbox for timing the install of the Gantry CLI release tarball in a hosted runner.
+Sandbox for timing the install of the Gantry CLI release tarball on a GitHub runner, and for trying the pull request
+comment Action (`.github/workflows/gantry-comment.yml`, which runs on pull requests of this repository; `src/` is a tiny
+TypeScript package for those pull requests to change). The prerelease `v0.1.0-sandbox.3` carries the tarball it installs.
 
 The release `v0.1.0-sandbox.1` carries `gantry-0.1.0.tgz` and its `.sha256`, built from
 [architecture-visualization-cc-plugin](https://github.com/jbknick/architecture-visualization-cc-plugin) at 3f86b0f.
